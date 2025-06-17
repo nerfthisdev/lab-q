@@ -14,7 +14,7 @@ func GetLogger() zap.Logger {
 	zapConfig.DisableCaller = true
 	logger, err := zapConfig.Build()
 	if err != nil {
-		log.Fatalf("failed to setup zap logger", err.Error())
+		log.Fatalf("failed to setup zap logger %s", err.Error())
 	}
 
 	logger.Info("zap logger setup succeeded")
