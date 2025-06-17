@@ -6,7 +6,9 @@
 
 - Add classes
 - Add dates (with weekly recurrence)
-  Optional:
+
+Optional:
+
 - Edit queue
 - Update the queue according to time
 
@@ -14,6 +16,8 @@
 
 - Add yourself to the queue
 - Check the queue
-  Optional:
+
+Optional:
+
 - Swap places
 - Check in yourself to update the queue
