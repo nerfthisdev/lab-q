@@ -1,8 +1,8 @@
 # LabQ
 
-### Requirements
+## Requirements
 
-#### For admin
+### For admin
 
 - Add classes
 - Add dates (with weekly recurrence)
@@ -12,7 +12,7 @@ Optional:
 - Edit queue
 - Update the queue according to time
 
-#### For regular student
+### For regular student
 
 - Add yourself to the queue
 - Check the queue
