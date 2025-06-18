@@ -9,7 +9,11 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-func Handler(ctx context.Context, b *bot.Bot, update *models.Update) {
+var userStates = make(map[int64]string)
+
+const StateAwaitingName = "awaiting_name"
+
+func (tgb *Tgbot)DefaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	if update.Message == nil {
 		return
 	}

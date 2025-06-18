@@ -30,6 +30,12 @@ type QueueEntry struct {
 	JoinedAt  time.Time
 }
 
+func Init(dbPool *pgxpool.Pool) *Repository {
+	return &Repository{
+		DB: dbPool,
+	}
+}
+
 /* User */
 func (r *Repository) UpsertUser(user User) error {
 	_, err := r.DB.Exec(context.Background(), `
@@ -41,6 +47,33 @@ func (r *Repository) UpsertUser(user User) error {
 	`, user.TelegramUserID, user.TelegramChatID, user.Username, user.IsAdmin)
 	return err
 }
+
+func (r *Repository) GetUserByID(userID int64) (*User, error) {
+	row := r.DB.QueryRow(context.Background(), `
+		SELECT id, chat_id, username, is_admin FROM users WHERE id = $1
+	`, userID)
+
+	var u User
+	err := row.Scan(&u.TelegramUserID, &u.TelegramChatID, &u.Username, &u.IsAdmin)
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (r *Repository) CreateOrUpdateUser(user User) error {
+	_, err := r.DB.Exec(context.Background(), `
+		INSERT INTO users (id, chat_id, username, is_admin)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (id) DO UPDATE
+		SET chat_id = EXCLUDED.chat_id,
+		    username = EXCLUDED.username;
+	`, user.TelegramUserID, user.TelegramChatID, user.Username, user.IsAdmin)
+	return err
+}
+
+
 
 /* Subject */
 func (r *Repository) CreateSubject(name, description string) error {

@@ -7,19 +7,22 @@ import (
 
 	"github.com/go-telegram/bot"
 	"github.com/nerthisdev/lab-q/internal/config"
+	"github.com/nerthisdev/lab-q/internal/repository"
 	"go.uber.org/zap"
 )
 
 type Tgbot struct {
-	Bot    *bot.Bot
-	Logger *zap.Logger
-	Config *config.Config
+	Bot        *bot.Bot
+	Logger     *zap.Logger
+	Config     *config.Config
+	Repository *repository.Repository
 }
 
-func Init(config *config.Config, opts []bot.Option, ctx context.Context, logger *zap.Logger) *Tgbot {
+func Init(config *config.Config, opts []bot.Option, ctx context.Context, logger *zap.Logger, repository *repository.Repository) *Tgbot {
 	tgb := Tgbot{
-		Logger: logger,
-		Config: config,
+		Logger:     logger,
+		Config:     config,
+		Repository: repository,
 	}
 
 	b, err := bot.New(tgb.Config.Bot.APIToken, opts...)
