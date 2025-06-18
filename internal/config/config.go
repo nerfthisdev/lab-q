@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 
+	"github.com/nerthisdev/lab-q/internal/database"
 	"gopkg.in/yaml.v3"
 )
 
@@ -17,8 +18,9 @@ type Bot struct {
 }
 
 type Config struct {
-	Server Server `yaml:"server"`
-	Bot    Bot    `yaml:"bot"`
+	Server   Server          `yaml:"server"`
+	Bot      Bot             `yaml:"bot"`
+	Database database.Config `yaml:"databasea"`
 }
 
 func GetConfiguration(configPath string, cfg interface{}) error {
