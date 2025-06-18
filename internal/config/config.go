@@ -29,7 +29,7 @@ func GetConfiguration(configPath string, cfg interface{}) error {
 
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
-		return nil
+		return err
 	}
 	return nil
 }
