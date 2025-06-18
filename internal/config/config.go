@@ -13,7 +13,7 @@ type Server struct {
 
 type Bot struct {
 	APIToken   string `yaml:"token"`
-	WebHookURL string `yaml:"webHookURL"`
+	WebHookURL string `yaml:"webhookURL"`
 }
 
 type Config struct {
