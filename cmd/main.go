@@ -7,7 +7,6 @@ import (
 	"os/signal"
 
 	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
 	"github.com/nerthisdev/lab-q/internal/config"
 	"github.com/nerthisdev/lab-q/internal/database"
 	"github.com/nerthisdev/lab-q/internal/logger"
@@ -39,17 +38,8 @@ func main() {
 
 	defer cancel()
 
-	opts := []bot.Option{
-		bot.WithDefaultHandler(tgbot.Handler),
-	}
+	opts := []bot.Option{}
 
 	tgb := tgbot.Init(cfg, opts, ctx, &logger, repo)
 	tgb.Run(ctx)
-}
-
-func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   update.Message.Text,
-	})
 }
