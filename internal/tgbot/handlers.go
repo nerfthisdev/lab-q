@@ -2,36 +2,42 @@ package tgbot
 
 import (
 	"context"
-	"fmt"
-	"time"
+	"strings"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"github.com/nerthisdev/lab-q/internal/repository"
+	"go.uber.org/zap"
 )
 
-func Handler(ctx context.Context, b *bot.Bot, update *models.Update) {
+func (tgb *Tgbot) DefaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	if update.Message == nil {
 		return
 	}
 
-	m, errSend := b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   update.Message.Text,
+	from := update.Message.From
+	userID := from.ID
+	chatID := update.Message.Chat.ID
+	text := strings.TrimSpace(update.Message.Text)
+
+	name := text
+	err := tgb.Repository.CreateOrUpdateUser(repository.User{
+		TelegramUserID: userID,
+		TelegramChatID: chatID,
+		Username:       name,
+		IsAdmin:        false,
 	})
-	if errSend != nil {
-		fmt.Printf("error sending message: %v\n", errSend)
-		return
+	if err != nil {
+		tgb.Logger.Fatal("couldnt create or update user", zap.String("reason", err.Error()))
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   "Error occured while regestering",
+		})
 	}
 
-	time.Sleep(time.Second * 2)
-
-	_, errEdit := b.EditMessageText(ctx, &bot.EditMessageTextParams{
-		ChatID:    m.Chat.ID,
-		MessageID: m.ID,
-		Text:      "New Message!",
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: chatID,
+		Text:   "Welcome",
 	})
-	if errEdit != nil {
-		fmt.Printf("error edit message: %v\n", errEdit)
-		return
-	}
+
 }

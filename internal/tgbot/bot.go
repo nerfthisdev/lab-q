@@ -6,21 +6,27 @@ import (
 	"net/http"
 
 	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 	"github.com/nerthisdev/lab-q/internal/config"
+	"github.com/nerthisdev/lab-q/internal/repository"
 	"go.uber.org/zap"
 )
 
 type Tgbot struct {
-	Bot    *bot.Bot
-	Logger *zap.Logger
-	Config *config.Config
+	Bot        *bot.Bot
+	Logger     *zap.Logger
+	Config     *config.Config
+	Repository *repository.Repository
 }
 
-func Init(config *config.Config, opts []bot.Option, ctx context.Context, logger *zap.Logger) *Tgbot {
+func Init(config *config.Config, opts []bot.Option, ctx context.Context, logger *zap.Logger, repository *repository.Repository) *Tgbot {
 	tgb := Tgbot{
-		Logger: logger,
-		Config: config,
+		Logger:     logger,
+		Config:     config,
+		Repository: repository,
 	}
+
+	opts = append(opts, bot.WithDefaultHandler(tgb.DefaultHandler))
 
 	b, err := bot.New(tgb.Config.Bot.APIToken, opts...)
 	if err != nil {
@@ -51,4 +57,11 @@ func (tgb *Tgbot) Run(ctx context.Context) {
 	}()
 
 	tgb.Bot.StartWebhook(ctx)
+}
+
+func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   update.Message.Text,
+	})
 }
