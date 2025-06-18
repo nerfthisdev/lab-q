@@ -32,7 +32,7 @@ func main() {
 	defer cancel()
 
 	opts := []bot.Option{
-		bot.WithDefaultHandler(handler),
+		bot.WithDefaultHandler(tgbot.Handler),
 	}
 
 	tgb := tgbot.Init(cfg, opts, ctx, &logger)
