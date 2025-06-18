@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
 	"github.com/nerthisdev/lab-q/internal/config"
 	"go.uber.org/zap"
 )
@@ -31,12 +30,6 @@ func Init(config *config.Config, opts []bot.Option, ctx context.Context, logger 
 
 	tgb.Bot = b
 
-	button := bot.SetChatMenuButtonParams{
-		MenuButton: models.MenuButtonCommands{},
-	}
-
-	tgb.Bot.SetChatMenuButton(ctx, &button)
-
 	set, err := tgb.Bot.SetWebhook(ctx, &bot.SetWebhookParams{
 		URL: tgb.Config.Bot.WebHookURL,
 	})
@@ -58,10 +51,4 @@ func (tgb *Tgbot) Run(ctx context.Context) {
 	}()
 
 	tgb.Bot.StartWebhook(ctx)
-}
-
-func (tgb *Tgbot) registerCommands(ctx context.Context, commands []models.BotCommand) {
-	tgb.Bot.SetMyCommands(ctx, &bot.SetMyCommandsParams{
-		Commands: commands,
-	})
 }
