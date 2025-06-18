@@ -15,7 +15,7 @@ type Config struct {
 }
 
 func NewPostgresDB(cfg Config) (*pgxpool.Pool, error) {
-	pool, err := pgxpool.New(context.Background(), "")
+	pool, err := pgxpool.New(context.Background(), cfg.ConnectionURI)
 	if err != nil {
 		return &pgxpool.Pool{}, errors.New("failed to parse connectionURI to build pool")
 	}

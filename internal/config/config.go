@@ -20,7 +20,7 @@ type Bot struct {
 type Config struct {
 	Server   Server          `yaml:"server"`
 	Bot      Bot             `yaml:"bot"`
-	Database database.Config `yaml:"databasea"`
+	Database database.Config `yaml:"database"`
 }
 
 func GetConfiguration(configPath string, cfg interface{}) error {
