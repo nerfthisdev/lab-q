@@ -162,12 +162,12 @@ func (r *Repository) RemoveUserFromQueue(subjectID int, userID int64) error {
 
 func (r *Repository) GetQueueForSubject(subjectID int) ([]User, error) {
 	rows, err := r.DB.Query(context.Background(), `
-		SELECT u.id, u.full_name, u.username, u.is_admin
-		FROM subject_queue q
-		JOIN users u ON u.id = q.user_id
-		WHERE q.subject_id = $1
-		ORDER BY q.joined_at
-	`, subjectID)
+               SELECT u.id, u.username, u.is_admin
+               FROM subject_queue q
+               JOIN users u ON u.id = q.user_id
+               WHERE q.subject_id = $1
+               ORDER BY q.joined_at
+       `, subjectID)
 	if err != nil {
 		return nil, err
 	}
