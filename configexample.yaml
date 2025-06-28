@@ -1,0 +1,8 @@
+server:
+  host: "0.0.0.0" # host of http server
+  port: ":2000" # port of http server
+bot:
+  token: "" # your telegram api token goes there
+  webhookURL: "" # your webhook url goes there
+database:
+  connectionURI: "" # your postgres connection uri goes there
