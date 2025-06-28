@@ -29,11 +29,16 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed to get configuration", zap.String("reason", err.Error()))
 	}
-	db, err := database.NewPostgresDB(cfg.Database)
-	if err != nil {
-		logger.Fatal("failed to connect to DB", zap.String("reason", err.Error()))
-	}
-	repo := repository.Init(db)
+        db, err := database.NewPostgresDB(cfg.Database)
+        if err != nil {
+                logger.Fatal("failed to connect to DB", zap.String("reason", err.Error()))
+        }
+
+        if err := database.RunMigrations(db, "./migrations"); err != nil {
+                logger.Fatal("failed to run migrations", zap.String("reason", err.Error()))
+        }
+
+        repo := repository.Init(db)
 
 	defer cancel()
 
