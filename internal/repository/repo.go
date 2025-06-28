@@ -36,6 +36,15 @@ func Init(dbPool *pgxpool.Pool) *Repository {
 	}
 }
 
+type SubjectSchedule struct {
+	ID            int64
+	SubjectID     int64
+	DayOfWeek     int
+	TimeOfDay     time.Time
+	StartDate     time.Time
+	IntervalWeeks int
+}
+
 /* User */
 func (r *Repository) UpsertUser(user User) error {
 	_, err := r.DB.Exec(context.Background(), `
@@ -73,8 +82,6 @@ func (r *Repository) CreateOrUpdateUser(user User) error {
 	return err
 }
 
-
-
 /* Subject */
 func (r *Repository) CreateSubject(name, description string) error {
 	_, err := r.DB.Exec(context.Background(), `
@@ -102,6 +109,38 @@ func (r *Repository) GetAllSubjects() ([]Subject, error) {
 		subjects = append(subjects, s)
 	}
 	return subjects, nil
+}
+
+/* SubjectSchedule */
+func (r *Repository) CreateSubjectSchedule(subjectID int64, dayOfWeek int, timeOfDay, startDate time.Time, intervalWeeks int) error {
+	_, err := r.DB.Exec(context.Background(), `
+                INSERT INTO subject_schedule (subject_id, day_of_week, time_of_day, start_date, interval_weeks)
+                VALUES ($1, $2, $3, $4, $5)
+        `, subjectID, dayOfWeek, timeOfDay, startDate, intervalWeeks)
+	return err
+}
+
+func (r *Repository) GetSchedulesForSubject(subjectID int64) ([]SubjectSchedule, error) {
+	rows, err := r.DB.Query(context.Background(), `
+                SELECT id, subject_id, day_of_week, time_of_day, start_date, interval_weeks
+                FROM subject_schedule
+                WHERE subject_id = $1
+                ORDER BY id
+        `, subjectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var schedules []SubjectSchedule
+	for rows.Next() {
+		var s SubjectSchedule
+		if err := rows.Scan(&s.ID, &s.SubjectID, &s.DayOfWeek, &s.TimeOfDay, &s.StartDate, &s.IntervalWeeks); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, s)
+	}
+	return schedules, nil
 }
 
 /* Queue */
