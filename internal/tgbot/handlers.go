@@ -57,14 +57,23 @@ func (tgb *Tgbot) StartHandler(ctx context.Context, b *bot.Bot, update *models.U
 		Username:       strings.TrimSpace(u.Username),
 		IsAdmin:        false,
 	}
+
+	// store/update chat and username but keep admin flag if user exists
 	if err := tgb.Repository.CreateOrUpdateUser(user); err != nil {
 		tgb.Logger.Error("failed to register user", zap.Error(err))
 		return
 	}
 
+	dbUser, err := tgb.Repository.GetUserByID(u.ID)
+	if err != nil {
+		tgb.Logger.Error("failed to fetch user", zap.Error(err))
+		dbUser = &user
+	}
+
 	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   "Welcome to LabQ bot!",
+		ChatID:      update.Message.Chat.ID,
+		Text:        "Welcome to LabQ bot!",
+		ReplyMarkup: buildMainMenu(dbUser.IsAdmin),
 	})
 }
 
