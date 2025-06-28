@@ -11,6 +11,15 @@ CREATE TABLE IF NOT EXISTS subjects (
     description TEXT
 );
 
+CREATE TABLE IF NOT EXISTS subject_schedule (
+    id SERIAL PRIMARY KEY,
+    subject_id INT NOT NULL REFERENCES subjects(id),
+    day_of_week INT NOT NULL,
+    time_of_day TIME NOT NULL,
+    start_date DATE NOT NULL,
+    interval_weeks INT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS subject_queue (
     subject_id INT NOT NULL REFERENCES subjects(id),
     user_id BIGINT NOT NULL REFERENCES users(id),
