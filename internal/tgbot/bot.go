@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
 	"github.com/nerthisdev/lab-q/internal/config"
 	"github.com/nerthisdev/lab-q/internal/repository"
 	"go.uber.org/zap"
@@ -35,6 +34,7 @@ func Init(config *config.Config, opts []bot.Option, ctx context.Context, logger 
 	tgb.Logger.Info("created new bot instance")
 
 	tgb.Bot = b
+	tgb.registerRoutes()
 
 	set, err := tgb.Bot.SetWebhook(ctx, &bot.SetWebhookParams{
 		URL: tgb.Config.Bot.WebHookURL,
@@ -57,11 +57,4 @@ func (tgb *Tgbot) Run(ctx context.Context) {
 	}()
 
 	tgb.Bot.StartWebhook(ctx)
-}
-
-func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   update.Message.Text,
-	})
 }
