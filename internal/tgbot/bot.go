@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 	"github.com/nerthisdev/lab-q/internal/config"
 	"github.com/nerthisdev/lab-q/internal/repository"
 	"go.uber.org/zap"
@@ -35,6 +36,7 @@ func Init(config *config.Config, opts []bot.Option, ctx context.Context, logger 
 
 	tgb.Bot = b
 	tgb.registerRoutes()
+	tgb.registerCommands(ctx)
 
 	set, err := tgb.Bot.SetWebhook(ctx, &bot.SetWebhookParams{
 		URL: tgb.Config.Bot.WebHookURL,
@@ -57,4 +59,17 @@ func (tgb *Tgbot) Run(ctx context.Context) {
 	}()
 
 	tgb.Bot.StartWebhook(ctx)
+}
+
+func (tgb *Tgbot) registerCommands(ctx context.Context) {
+	commands := []models.BotCommand{
+		{Command: "start", Description: "start bot"},
+		{Command: "add_class", Description: "add new class"},
+		{Command: "add_date", Description: "add schedule date"},
+		{Command: "join", Description: "join subject queue"},
+		{Command: "queue", Description: "show subject queue"},
+	}
+	if _, err := tgb.Bot.SetMyCommands(ctx, &bot.SetMyCommandsParams{Commands: commands}); err != nil {
+		tgb.Logger.Error("failed to set commands", zap.Error(err))
+	}
 }
