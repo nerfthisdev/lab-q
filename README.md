@@ -37,6 +37,27 @@ Migrations are managed using [golang-migrate](https://github.com/golang-migrate/
 New migrations can be added as numbered `*.up.sql` and `*.down.sql` files in the
 `migrations` folder. They will be executed in order on startup.
 
+## Local testing with Docker Compose
+
+For convenience during development a Docker Compose file is provided that
+starts a PostgreSQL instance locally. Start the database with:
+
+```bash
+docker compose up -d postgres
+```
+
+Use the following connection string in your configuration file:
+
+```
+postgres://labq:labq@localhost:5432/labq?sslmode=disable
+```
+
+After running your tests or the application, shut down the database with:
+
+```bash
+docker compose down
+```
+
 ## Requirements
 
 ### For admin
