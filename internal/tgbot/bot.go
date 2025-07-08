@@ -40,7 +40,6 @@ func Init(config *config.Config, opts []bot.Option, ctx context.Context, logger 
 	tgb.Logger.Info("created new bot instance")
 
 	tgb.Bot = b
-	tgb.registerRoutes()
 	tgb.registerCommands(ctx)
 
 	set, err := tgb.Bot.SetWebhook(ctx, &bot.SetWebhookParams{

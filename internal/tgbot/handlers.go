@@ -46,7 +46,22 @@ func (tgb *Tgbot) DefaultHandler(ctx context.Context, b *bot.Bot, update *models
 	}
 
 	// Unknown text message
-	b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "unknown command"})
+	switch strings.ToLower(text) {
+	case "join queue":
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "use /join <subject_id>"})
+	case "check queue":
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "use /queue <subject_id>"})
+	case "list subjects":
+		tgb.SubjectsHandler(ctx, b, update)
+	case "change name":
+		tgb.SetNameHandler(ctx, b, update)
+	case "add class":
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "use /add_class <name>"})
+	case "add date":
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "use /add_date <subject_id> <day_of_week> <time(HH:MM)> <interval_weeks> <start_date(YYYY-MM-DD)>"})
+	default:
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "unknown command"})
+	}
 }
 
 // StartHandler registers a user and sends welcome message

@@ -45,5 +45,6 @@ func main() {
 	opts := []bot.Option{}
 
 	tgb := tgbot.Init(cfg, opts, ctx, &logger, repo)
+	tgb.RegisterRoutes()
 	tgb.Run(ctx)
 }
