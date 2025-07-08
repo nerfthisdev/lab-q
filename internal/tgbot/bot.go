@@ -13,23 +13,25 @@ import (
 )
 
 type Tgbot struct {
-	Bot        *bot.Bot
-	Logger     *zap.Logger
-	Config     *config.Config
-	Repository *repository.Repository
+	Bot          *bot.Bot
+	Logger       *zap.Logger
+	Config       *config.Config
+	Repository   *repository.Repository
+	awaitingName map[int64]bool
 }
 
 func Init(config *config.Config, opts []bot.Option, ctx context.Context, logger *zap.Logger, repository *repository.Repository) *Tgbot {
-        tgb := Tgbot{
-                Logger:     logger,
-                Config:     config,
-                Repository: repository,
-        }
+	tgb := Tgbot{
+		Logger:       logger,
+		Config:       config,
+		Repository:   repository,
+		awaitingName: make(map[int64]bool),
+	}
 
-        opts = append(opts,
-                bot.WithDefaultHandler(tgb.DefaultHandler),
-                bot.WithMiddlewares(tgb.logUpdateMiddleware),
-        )
+	opts = append(opts,
+		bot.WithDefaultHandler(tgb.DefaultHandler),
+		bot.WithMiddlewares(tgb.logUpdateMiddleware),
+	)
 
 	b, err := bot.New(tgb.Config.Bot.APIToken, opts...)
 	if err != nil {
@@ -72,6 +74,7 @@ func (tgb *Tgbot) registerCommands(ctx context.Context) {
 		{Command: "join", Description: "join subject queue"},
 		{Command: "queue", Description: "show subject queue"},
 		{Command: "subjects", Description: "list available subjects"},
+		{Command: "setname", Description: "set or change your name"},
 	}
 	if _, err := tgb.Bot.SetMyCommands(ctx, &bot.SetMyCommandsParams{Commands: commands}); err != nil {
 		tgb.Logger.Error("failed to set commands", zap.Error(err))

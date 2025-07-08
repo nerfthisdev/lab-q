@@ -18,5 +18,6 @@ admins:
 - `/add_date <subject_id> <day_of_week> <time(HH:MM)> <interval_weeks> <start_date(YYYY-MM-DD)>` - add schedule entry (admin only)
 - `/join <subject_id>` - join the queue for the subject
 - `/queue <subject_id>` - show the queue
+- `/setname` - set or change your displayed name
 
 Administrators are recognised based on the IDs configured above. Regular users can join and view queues.

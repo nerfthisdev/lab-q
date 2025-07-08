@@ -23,25 +23,30 @@ func (tgb *Tgbot) DefaultHandler(ctx context.Context, b *bot.Bot, update *models
 	chatID := update.Message.Chat.ID
 	text := strings.TrimSpace(update.Message.Text)
 
-	name := text
-	err := tgb.Repository.CreateOrUpdateUser(repository.User{
-		TelegramUserID: userID,
-		TelegramChatID: chatID,
-		Username:       name,
-		IsAdmin:        tgb.isAdmin(userID),
-	})
-	if err != nil {
-		tgb.Logger.Fatal("couldnt create or update user", zap.String("reason", err.Error()))
-		b.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: chatID,
-			Text:   "Error occured while regestering",
+	// If we previously asked for a name, treat the incoming text as the user's name
+	if tgb.awaitingName[userID] {
+		if text == "" {
+			b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "name cannot be empty"})
+			return
+		}
+		err := tgb.Repository.CreateOrUpdateUser(repository.User{
+			TelegramUserID: userID,
+			TelegramChatID: chatID,
+			Username:       text,
+			IsAdmin:        tgb.isAdmin(userID),
 		})
+		if err != nil {
+			tgb.Logger.Error("could not save user name", zap.Error(err))
+			b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "failed to save name"})
+			return
+		}
+		delete(tgb.awaitingName, userID)
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "Name saved"})
+		return
 	}
 
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: chatID,
-		Text:   "Welcome",
-	})
+	// Unknown text message
+	b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "unknown command"})
 }
 
 // StartHandler registers a user and sends welcome message
@@ -51,28 +56,41 @@ func (tgb *Tgbot) StartHandler(ctx context.Context, b *bot.Bot, update *models.U
 	}
 
 	u := update.Message.From
-	user := repository.User{
-		TelegramUserID: u.ID,
-		TelegramChatID: update.Message.Chat.ID,
-		Username:       strings.TrimSpace(u.Username),
-		IsAdmin:        tgb.isAdmin(u.ID),
-	}
-
-	// store/update chat and username but keep admin flag if user exists
-	if err := tgb.Repository.CreateOrUpdateUser(user); err != nil {
-		tgb.Logger.Error("failed to register user", zap.Error(err))
-		return
-	}
+	chatID := update.Message.Chat.ID
 
 	dbUser, err := tgb.Repository.GetUserByID(u.ID)
 	if err != nil {
-		tgb.Logger.Error("failed to fetch user", zap.Error(err))
-		dbUser = &user
+		// new user
+		user := repository.User{
+			TelegramUserID: u.ID,
+			TelegramChatID: chatID,
+			Username:       "",
+			IsAdmin:        tgb.isAdmin(u.ID),
+		}
+		if err := tgb.Repository.CreateOrUpdateUser(user); err != nil {
+			tgb.Logger.Error("failed to register user", zap.Error(err))
+			return
+		}
+		tgb.awaitingName[u.ID] = true
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "Welcome! Please send your name."})
+		return
+	}
+
+	// existing user - update chat id
+	dbUser.TelegramChatID = chatID
+	if err := tgb.Repository.CreateOrUpdateUser(*dbUser); err != nil {
+		tgb.Logger.Error("failed to update user", zap.Error(err))
+	}
+
+	if dbUser.Username == "" {
+		tgb.awaitingName[u.ID] = true
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "Please send your name."})
+		return
 	}
 
 	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:      update.Message.Chat.ID,
-		Text:        "Welcome to LabQ bot!",
+		ChatID:      chatID,
+		Text:        fmt.Sprintf("Welcome back, %s!", dbUser.Username),
 		ReplyMarkup: buildMainMenu(dbUser.IsAdmin),
 	})
 }
@@ -239,6 +257,16 @@ func (tgb *Tgbot) SubjectsHandler(ctx context.Context, b *bot.Bot, update *model
 		bld.WriteString(fmt.Sprintf("%d. %s\n", s.ID, s.Name))
 	}
 	b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: bld.String()})
+}
+
+// SetNameHandler prompts user to enter a new name
+func (tgb *Tgbot) SetNameHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	if update.Message == nil {
+		return
+	}
+
+	tgb.awaitingName[update.Message.From.ID] = true
+	b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: "Please send your new name."})
 }
 
 // helper to check admin status
