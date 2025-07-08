@@ -16,9 +16,9 @@ admins:
 - `/subjects` - list all available subjects with their IDs
 - `/add_class <name>` - create a new class (admin only)
 - `/add_date <subject_id> <day_of_week> <time(HH:MM)> <interval_weeks> <start_date(YYYY-MM-DD)>` - add schedule entry (admin only)
-- `/join <subject_id>` - join the queue for the subject
-- `/queue <subject_id>` - show the queue
+- `/join <schedule_id>` - join the queue for the schedule
+- `/queue <schedule_id>` - show the queue
 - `/setname` - set or change your displayed name
-- `/show` - choose a subject and date from inline buttons
+ - `/show` - choose a subject and date from inline buttons and join its queue
 
 Administrators are recognised based on the IDs configured above. Regular users can join and view queues.

@@ -145,29 +145,29 @@ func (r *Repository) GetSchedulesForSubject(subjectID int64) ([]SubjectSchedule,
 
 /* Queue */
 
-func (r *Repository) AddUserToQueue(subjectID int, userID int64) error {
+func (r *Repository) AddUserToScheduleQueue(scheduleID int64, userID int64) error {
 	_, err := r.DB.Exec(context.Background(), `
-		INSERT INTO subject_queue (subject_id, user_id)
-		VALUES ($1, $2) ON CONFLICT DO NOTHING;
-	`, subjectID, userID)
+                INSERT INTO schedule_queue (schedule_id, user_id)
+                VALUES ($1, $2) ON CONFLICT DO NOTHING;
+        `, scheduleID, userID)
 	return err
 }
 
-func (r *Repository) RemoveUserFromQueue(subjectID int, userID int64) error {
+func (r *Repository) RemoveUserFromScheduleQueue(scheduleID int64, userID int64) error {
 	_, err := r.DB.Exec(context.Background(), `
-		DELETE FROM subject_queue WHERE subject_id = $1 AND user_id = $2
-	`, subjectID, userID)
+                DELETE FROM schedule_queue WHERE schedule_id = $1 AND user_id = $2
+        `, scheduleID, userID)
 	return err
 }
 
-func (r *Repository) GetQueueForSubject(subjectID int) ([]User, error) {
+func (r *Repository) GetQueueForSchedule(scheduleID int64) ([]User, error) {
 	rows, err := r.DB.Query(context.Background(), `
                SELECT u.id, u.username, u.is_admin
-               FROM subject_queue q
+               FROM schedule_queue q
                JOIN users u ON u.id = q.user_id
-               WHERE q.subject_id = $1
+               WHERE q.schedule_id = $1
                ORDER BY q.joined_at
-       `, subjectID)
+       `, scheduleID)
 	if err != nil {
 		return nil, err
 	}

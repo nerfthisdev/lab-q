@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS subject_queue;
+DROP TABLE IF EXISTS schedule_queue;
 DROP TABLE IF EXISTS subject_schedule;
 DROP TABLE IF EXISTS subjects;
 DROP TABLE IF EXISTS users;
