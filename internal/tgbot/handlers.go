@@ -48,9 +48,9 @@ func (tgb *Tgbot) DefaultHandler(ctx context.Context, b *bot.Bot, update *models
 	// Unknown text message
 	switch strings.ToLower(text) {
 	case "join queue":
-		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "use /join <subject_id>"})
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "use /join <schedule_id>"})
 	case "check queue":
-		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "use /queue <subject_id>"})
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: chatID, Text: "use /queue <schedule_id>"})
 	case "list subjects":
 		tgb.SubjectsHandler(ctx, b, update)
 	case "change name":
@@ -201,23 +201,23 @@ func (tgb *Tgbot) JoinHandler(ctx context.Context, b *bot.Bot, update *models.Up
 
 	args := strings.Fields(update.Message.Text)
 	if len(args) < 2 {
-		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: "usage: /join <subject_id>"})
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: "usage: /join <schedule_id>"})
 		return
 	}
 
-	sid, err := strconv.Atoi(args[1])
+	sid, err := strconv.ParseInt(args[1], 10, 64)
 	if err != nil {
 		return
 	}
 
-	if err := tgb.Repository.AddUserToQueue(sid, update.Message.From.ID); err != nil {
+	if err := tgb.Repository.AddUserToScheduleQueue(sid, update.Message.From.ID); err != nil {
 		tgb.Logger.Error("failed to add to queue", zap.Error(err))
 		return
 	}
 	b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: "joined queue"})
 }
 
-// QueueHandler prints the queue for a subject
+// QueueHandler prints the queue for a schedule
 func (tgb *Tgbot) QueueHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	if update.Message == nil {
 		return
@@ -225,16 +225,16 @@ func (tgb *Tgbot) QueueHandler(ctx context.Context, b *bot.Bot, update *models.U
 
 	args := strings.Fields(update.Message.Text)
 	if len(args) < 2 {
-		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: "usage: /queue <subject_id>"})
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: "usage: /queue <schedule_id>"})
 		return
 	}
 
-	sid, err := strconv.Atoi(args[1])
+	sid, err := strconv.ParseInt(args[1], 10, 64)
 	if err != nil {
 		return
 	}
 
-	users, err := tgb.Repository.GetQueueForSubject(sid)
+	users, err := tgb.Repository.GetQueueForSchedule(sid)
 	if err != nil {
 		tgb.Logger.Error("failed to get queue", zap.Error(err))
 		return
@@ -356,15 +356,23 @@ func (tgb *Tgbot) ShowDateCallback(ctx context.Context, b *bot.Bot, update *mode
 		return
 	}
 
+	schedID, err := strconv.ParseInt(parts[0], 10, 64)
+	if err != nil {
+		return
+	}
 	ts, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
 		return
+	}
+
+	if err := tgb.Repository.AddUserToScheduleQueue(schedID, update.CallbackQuery.From.ID); err != nil {
+		tgb.Logger.Error("failed to join schedule", zap.Error(err))
 	}
 
 	dt := time.Unix(ts, 0)
 	b.EditMessageText(ctx, &bot.EditMessageTextParams{
 		ChatID:    update.CallbackQuery.Message.Message.Chat.ID,
 		MessageID: update.CallbackQuery.Message.Message.ID,
-		Text:      fmt.Sprintf("Selected date: %s", dt.Format("2006-01-02 15:04")),
+		Text:      fmt.Sprintf("Joined queue for %s", dt.Format("2006-01-02 15:04")),
 	})
 }

@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS subject_schedule (
     interval_weeks INT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS subject_queue (
-    subject_id INT NOT NULL REFERENCES subjects(id),
+CREATE TABLE IF NOT EXISTS schedule_queue (
+    schedule_id INT NOT NULL REFERENCES subject_schedule(id),
     user_id BIGINT NOT NULL REFERENCES users(id),
     joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY(subject_id, user_id)
+    PRIMARY KEY(schedule_id, user_id)
 );
