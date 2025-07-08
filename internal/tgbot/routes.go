@@ -10,4 +10,7 @@ func (tgb *Tgbot) RegisterRoutes() {
 	tgb.Bot.RegisterHandler(bot.HandlerTypeMessageText, "queue", bot.MatchTypeCommand, tgb.QueueHandler)
 	tgb.Bot.RegisterHandler(bot.HandlerTypeMessageText, "subjects", bot.MatchTypeCommand, tgb.SubjectsHandler)
 	tgb.Bot.RegisterHandler(bot.HandlerTypeMessageText, "setname", bot.MatchTypeCommand, tgb.SetNameHandler)
+	tgb.Bot.RegisterHandler(bot.HandlerTypeMessageText, "show", bot.MatchTypeCommand, tgb.ShowHandler)
+	tgb.Bot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "show_subj_", bot.MatchTypePrefix, tgb.ShowSubjectCallback)
+	tgb.Bot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "show_date_", bot.MatchTypePrefix, tgb.ShowDateCallback)
 }

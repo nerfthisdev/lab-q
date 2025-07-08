@@ -19,5 +19,6 @@ admins:
 - `/join <subject_id>` - join the queue for the subject
 - `/queue <subject_id>` - show the queue
 - `/setname` - set or change your displayed name
+- `/show` - choose a subject and date from inline buttons
 
 Administrators are recognised based on the IDs configured above. Regular users can join and view queues.

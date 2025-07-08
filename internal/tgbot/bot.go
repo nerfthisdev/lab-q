@@ -74,6 +74,7 @@ func (tgb *Tgbot) registerCommands(ctx context.Context) {
 		{Command: "queue", Description: "show subject queue"},
 		{Command: "subjects", Description: "list available subjects"},
 		{Command: "setname", Description: "set or change your name"},
+		{Command: "show", Description: "show schedule"},
 	}
 	if _, err := tgb.Bot.SetMyCommands(ctx, &bot.SetMyCommandsParams{Commands: commands}); err != nil {
 		tgb.Logger.Error("failed to set commands", zap.Error(err))

@@ -293,3 +293,78 @@ func (tgb *Tgbot) isAdmin(id int64) bool {
 	}
 	return false
 }
+
+// ShowHandler presents subject list with inline buttons
+func (tgb *Tgbot) ShowHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	if update.Message == nil {
+		return
+	}
+
+	subjects, err := tgb.Repository.GetAllSubjects()
+	if err != nil {
+		tgb.Logger.Error("failed to list subjects", zap.Error(err))
+		return
+	}
+
+	kb := buildSubjectsInline(subjects)
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID:      update.Message.Chat.ID,
+		Text:        "Choose subject:",
+		ReplyMarkup: kb,
+	})
+}
+
+// ShowSubjectCallback displays schedule dates for the chosen subject
+func (tgb *Tgbot) ShowSubjectCallback(ctx context.Context, b *bot.Bot, update *models.Update) {
+	if update.CallbackQuery == nil {
+		return
+	}
+
+	b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{CallbackQueryID: update.CallbackQuery.ID})
+
+	data := strings.TrimPrefix(update.CallbackQuery.Data, "show_subj_")
+	sid, err := strconv.ParseInt(data, 10, 64)
+	if err != nil {
+		return
+	}
+
+	schedules, err := tgb.Repository.GetSchedulesForSubject(sid)
+	if err != nil {
+		tgb.Logger.Error("failed to get schedules", zap.Error(err))
+		return
+	}
+
+	kb := buildDatesInline(schedules)
+	b.EditMessageText(ctx, &bot.EditMessageTextParams{
+		ChatID:      update.CallbackQuery.Message.Message.Chat.ID,
+		MessageID:   update.CallbackQuery.Message.Message.ID,
+		Text:        "Choose date:",
+		ReplyMarkup: kb,
+	})
+}
+
+// ShowDateCallback finalizes date selection
+func (tgb *Tgbot) ShowDateCallback(ctx context.Context, b *bot.Bot, update *models.Update) {
+	if update.CallbackQuery == nil {
+		return
+	}
+
+	b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{CallbackQueryID: update.CallbackQuery.ID})
+
+	parts := strings.Split(strings.TrimPrefix(update.CallbackQuery.Data, "show_date_"), "_")
+	if len(parts) != 2 {
+		return
+	}
+
+	ts, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return
+	}
+
+	dt := time.Unix(ts, 0)
+	b.EditMessageText(ctx, &bot.EditMessageTextParams{
+		ChatID:    update.CallbackQuery.Message.Message.Chat.ID,
+		MessageID: update.CallbackQuery.Message.Message.ID,
+		Text:      fmt.Sprintf("Selected date: %s", dt.Format("2006-01-02 15:04")),
+	})
+}
