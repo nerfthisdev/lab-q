@@ -3,6 +3,7 @@ package tgbot
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -167,22 +168,32 @@ func (tgb *Tgbot) AddDateHandler(ctx context.Context, b *bot.Bot, update *models
 
 	sid, err := strconv.ParseInt(subjectID, 10, 64)
 	if err != nil {
+		tgb.Logger.Error("failed to create schedule", zap.Error(err))
+
 		return
 	}
 	dow, err := strconv.Atoi(day)
 	if err != nil {
+		tgb.Logger.Error("failed to create schedule", zap.Error(err))
+
 		return
 	}
 	tod, err := time.Parse("15:04", timeStr)
 	if err != nil {
+		tgb.Logger.Error("failed to create schedule", zap.Error(err))
+
 		return
 	}
 	iv, err := strconv.Atoi(interval)
 	if err != nil {
+		tgb.Logger.Error("failed to create schedule", zap.Error(err))
+
 		return
 	}
 	start, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
+		tgb.Logger.Error("failed to create schedule", zap.Error(err))
+
 		return
 	}
 
@@ -286,12 +297,7 @@ func (tgb *Tgbot) SetNameHandler(ctx context.Context, b *bot.Bot, update *models
 
 // helper to check admin status
 func (tgb *Tgbot) isAdmin(id int64) bool {
-	for _, a := range tgb.Config.AdminIDs {
-		if a == id {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(tgb.Config.AdminIDs, id)
 }
 
 // ShowHandler presents subject list with inline buttons
