@@ -6,3 +6,5 @@ bot:
   webhookURL: "" # your webhook url goes there
 database:
   connectionURI: "" # your postgres connection uri goes there
+admins:
+  - 123456789 # telegram user ids allowed to administer the bot

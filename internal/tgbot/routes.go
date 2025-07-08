@@ -8,4 +8,5 @@ func (tgb *Tgbot) registerRoutes() {
 	tgb.Bot.RegisterHandler(bot.HandlerTypeMessageText, "/add_date", bot.MatchTypeCommand, tgb.AddDateHandler)
 	tgb.Bot.RegisterHandler(bot.HandlerTypeMessageText, "/join", bot.MatchTypeCommand, tgb.JoinHandler)
 	tgb.Bot.RegisterHandler(bot.HandlerTypeMessageText, "/queue", bot.MatchTypeCommand, tgb.QueueHandler)
+	tgb.Bot.RegisterHandler(bot.HandlerTypeMessageText, "/subjects", bot.MatchTypeCommand, tgb.SubjectsHandler)
 }

@@ -21,6 +21,7 @@ type Config struct {
 	Server   Server          `yaml:"server"`
 	Bot      Bot             `yaml:"bot"`
 	Database database.Config `yaml:"database"`
+	AdminIDs []int64         `yaml:"admins"`
 }
 
 func GetConfiguration(configPath string, cfg interface{}) error {

@@ -28,7 +28,7 @@ func (tgb *Tgbot) DefaultHandler(ctx context.Context, b *bot.Bot, update *models
 		TelegramUserID: userID,
 		TelegramChatID: chatID,
 		Username:       name,
-		IsAdmin:        false,
+		IsAdmin:        tgb.isAdmin(userID),
 	})
 	if err != nil {
 		tgb.Logger.Fatal("couldnt create or update user", zap.String("reason", err.Error()))
@@ -55,7 +55,7 @@ func (tgb *Tgbot) StartHandler(ctx context.Context, b *bot.Bot, update *models.U
 		TelegramUserID: u.ID,
 		TelegramChatID: update.Message.Chat.ID,
 		Username:       strings.TrimSpace(u.Username),
-		IsAdmin:        false,
+		IsAdmin:        tgb.isAdmin(u.ID),
 	}
 
 	// store/update chat and username but keep admin flag if user exists
@@ -215,4 +215,38 @@ func (tgb *Tgbot) QueueHandler(ctx context.Context, b *bot.Bot, update *models.U
 		bld.WriteString("queue is empty")
 	}
 	b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: bld.String()})
+}
+
+// SubjectsHandler lists all available subjects
+func (tgb *Tgbot) SubjectsHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	if update.Message == nil {
+		return
+	}
+
+	subjects, err := tgb.Repository.GetAllSubjects()
+	if err != nil {
+		tgb.Logger.Error("failed to list subjects", zap.Error(err))
+		return
+	}
+
+	if len(subjects) == 0 {
+		b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: "no subjects"})
+		return
+	}
+
+	var bld strings.Builder
+	for _, s := range subjects {
+		bld.WriteString(fmt.Sprintf("%d. %s\n", s.ID, s.Name))
+	}
+	b.SendMessage(ctx, &bot.SendMessageParams{ChatID: update.Message.Chat.ID, Text: bld.String()})
+}
+
+// helper to check admin status
+func (tgb *Tgbot) isAdmin(id int64) bool {
+	for _, a := range tgb.Config.AdminIDs {
+		if a == id {
+			return true
+		}
+	}
+	return false
 }
